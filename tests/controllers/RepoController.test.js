@@ -20,7 +20,9 @@ describe('RepoController', () => {
             promptNewRepo: jest.fn(),
             selectRepos: jest.fn(),
             promptNewBranch: jest.fn(),
-            promptNewMilestone: jest.fn()
+            promptNewMilestone: jest.fn(),
+            showLoading: jest.fn(),
+            hideLoading: jest.fn()
         };
         mockLogger = {
             log: jest.fn(),

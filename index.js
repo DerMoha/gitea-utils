@@ -34,7 +34,24 @@ async function main() {
     const userController = new UserController(service, ui, logger);
     const settingsController = new SettingsController(service, ui, logger, configManager);
 
+    // Fetch initial data for dashboard
+    let currentUser = null;
+    let serverVersion = null;
+    try {
+        const [userRes, verRes] = await Promise.allSettled([
+            service.client.get('/user'),
+            service.client.get('/version')
+        ]);
+        
+        if (userRes.status === 'fulfilled') currentUser = userRes.value.data;
+        if (verRes.status === 'fulfilled') serverVersion = verRes.value.data;
+
+    } catch (e) {
+        logger.warn('Failed to fetch initial dashboard data');
+    }
+
     while (true) {
+        ui.showDashboard(currentUser, serverVersion);
         const action = await ui.promptMenu();
         if (action === 'exit') process.exit(0);
 
