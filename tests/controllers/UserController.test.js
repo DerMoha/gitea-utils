@@ -14,7 +14,10 @@ describe('UserController', () => {
         };
         mockUI = {
             promptUserMenu: jest.fn(),
-            promptNewUser: jest.fn()
+            promptNewUser: jest.fn(),
+            showLoading: jest.fn(),
+            hideLoading: jest.fn(),
+            showInteractiveList: jest.fn()
         };
         mockLogger = {
             log: jest.fn(),
@@ -31,7 +34,7 @@ describe('UserController', () => {
         await controller.listUsers();
 
         expect(mockService.getUsers).toHaveBeenCalled();
-        expect(mockLogger.table).toHaveBeenCalled();
+        expect(mockUI.showInteractiveList).toHaveBeenCalled();
     });
 
     test('addUser prompts and calls service', async () => {

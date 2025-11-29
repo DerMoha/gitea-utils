@@ -22,7 +22,8 @@ describe('RepoController', () => {
             promptNewBranch: jest.fn(),
             promptNewMilestone: jest.fn(),
             showLoading: jest.fn(),
-            hideLoading: jest.fn()
+            hideLoading: jest.fn(),
+            showInteractiveList: jest.fn()
         };
         mockLogger = {
             log: jest.fn(),
@@ -43,7 +44,7 @@ describe('RepoController', () => {
 
         expect(mockService.getRepos).toHaveBeenCalled();
         expect(mockLogger.info).toHaveBeenCalledWith('Fetching repositories...');
-        expect(mockLogger.table).toHaveBeenCalled();
+        expect(mockUI.showInteractiveList).toHaveBeenCalled();
     });
 
     test('createRepo prompts user and calls service', async () => {
