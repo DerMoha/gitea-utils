@@ -1,0 +1,27 @@
+{
+  "name": "gitea-utils",
+  "version": "1.0.0",
+  "description": "A TUI-based utility for managing a self-hosted Gitea instance via PowerShell 7+.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bin": {
+    "gtu": "./index.js"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "chalk": "^4.1.2",
+    "conf": "^15.0.2",
+    "inquirer": "^8.2.7",
+    "js-yaml": "^4.1.1",
+    "open": "^11.0.0"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0"
+  }
+}
