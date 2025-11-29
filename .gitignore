@@ -1,3 +1,5 @@
 logs/
 config.json
 node_modules/
+# Idea Folder
+.idea/
