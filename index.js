@@ -5,6 +5,7 @@ import { GiteaService } from './lib/api.js';
 import { ConfigManager } from './lib/config.js';
 import { RepoController } from './lib/controllers/RepoController.js';
 import { UserController } from './lib/controllers/UserController.js';
+import { OrgController } from './lib/controllers/OrgController.js';
 import { SettingsController } from './lib/controllers/SettingsController.js';
 import { Logger } from './lib/Logger.js';
 
@@ -32,6 +33,7 @@ async function main() {
     const service = new GiteaService(url, token);
     const repoController = new RepoController(service, ui, logger);
     const userController = new UserController(service, ui, logger);
+    const orgController = new OrgController(service, ui, logger);
     const settingsController = new SettingsController(service, ui, logger, configManager);
 
     // Fetch initial data for dashboard
@@ -59,6 +61,8 @@ async function main() {
             await repoController.run();
         } else if (action === 'user') {
             await userController.run();
+        } else if (action === 'org') {
+            await orgController.run();
         } else if (action === 'settings') {
             await settingsController.run();
         }
