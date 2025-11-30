@@ -1,19 +1,31 @@
 import { jest } from '@jest/globals';
-import { RepoController } from '../../lib/controllers/RepoController.js';
+
+jest.unstable_mockModule('open', () => ({
+    default: jest.fn()
+}));
+
+const { RepoController } = await import('../../lib/controllers/RepoController.js');
+const { default: mockOpen } = await import('open');
 
 describe('RepoController', () => {
     let mockService;
     let mockUI;
     let mockLogger;
     let controller;
+    let mockRepo;
 
     beforeEach(() => {
+        mockRepo = { full_name: 'owner/repo', name: 'repo', owner: { login: 'owner' } };
         mockService = {
             getRepos: jest.fn(),
             createRepo: jest.fn(),
             deleteRepo: jest.fn(),
             createBranch: jest.fn(),
-            createMilestone: jest.fn()
+            createMilestone: jest.fn(),
+            getIssues: jest.fn(),
+            createIssue: jest.fn(),
+            updateIssueState: jest.fn(),
+            searchIssues: jest.fn()
         };
         mockUI = {
             promptRepoMenu: jest.fn(),
@@ -21,6 +33,9 @@ describe('RepoController', () => {
             selectRepos: jest.fn(),
             promptNewBranch: jest.fn(),
             promptNewMilestone: jest.fn(),
+            promptIssueFilterMenu: jest.fn(),
+            promptIssueActionMenu: jest.fn(),
+            promptNewIssue: jest.fn(),
             showLoading: jest.fn(),
             hideLoading: jest.fn(),
             showInteractiveList: jest.fn()
@@ -31,9 +46,63 @@ describe('RepoController', () => {
             success: jest.fn(),
             error: jest.fn(),
             table: jest.fn(),
-            gray: jest.fn()
+            gray: jest.fn(),
+            warn: jest.fn()
         };
         controller = new RepoController(mockService, mockUI, mockLogger);
+    });
+
+    test('manageIssues flow with "all" filter fetches and lists', async () => {
+        mockUI.promptIssueFilterMenu
+            .mockResolvedValueOnce('all')
+            .mockResolvedValueOnce('back');
+        mockService.searchIssues.mockResolvedValue([{ title: 'Issue 1', repository: mockRepo }]);
+
+        await controller.manageIssues();
+
+        expect(mockUI.promptIssueFilterMenu).toHaveBeenCalled();
+        expect(mockService.searchIssues).toHaveBeenCalledWith({});
+        expect(mockUI.showInteractiveList).toHaveBeenCalled();
+    });
+
+    test('manageIssues flow with "repos" filter selects and lists', async () => {
+        mockUI.promptIssueFilterMenu
+            .mockResolvedValueOnce('repos')
+            .mockResolvedValueOnce('back');
+        mockService.getRepos.mockResolvedValue([mockRepo]);
+        mockUI.selectRepos.mockResolvedValue([mockRepo]);
+        mockService.getIssues.mockResolvedValue([{ title: 'Issue 1' }]);
+
+        await controller.manageIssues();
+
+        expect(mockUI.selectRepos).toHaveBeenCalled();
+        expect(mockService.getIssues).toHaveBeenCalledWith('owner', 'repo');
+        expect(mockUI.showInteractiveList).toHaveBeenCalled();
+    });
+
+    test('manageIssues flow with "create" filter prompts creation', async () => {
+        mockUI.promptIssueFilterMenu
+            .mockResolvedValueOnce('create')
+            .mockResolvedValueOnce('back');
+        mockService.getRepos.mockResolvedValue([mockRepo]);
+        mockUI.selectRepos.mockResolvedValue([mockRepo]);
+        mockUI.promptNewIssue.mockResolvedValue({ title: 'T', body: 'B' });
+        mockService.createIssue.mockResolvedValue({ number: 1 });
+
+        await controller.manageIssues();
+
+        expect(mockUI.selectRepos).toHaveBeenCalled();
+        expect(mockService.createIssue).toHaveBeenCalled();
+    });
+
+    test('createIssue prompts and calls service', async () => {
+        mockUI.promptNewIssue.mockResolvedValue({ title: 'Bug', body: 'Fix it' });
+        mockService.createIssue.mockResolvedValue({ number: 1, title: 'Bug' });
+
+        await controller.createIssue(mockRepo);
+
+        expect(mockService.createIssue).toHaveBeenCalledWith('owner', 'repo', 'Bug', 'Fix it');
+        expect(mockLogger.success).toHaveBeenCalled();
     });
 
     test('listRepos fetches and displays repos', async () => {
