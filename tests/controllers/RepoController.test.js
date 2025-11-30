@@ -5,7 +5,6 @@ jest.unstable_mockModule('open', () => ({
 }));
 
 const { RepoController } = await import('../../lib/controllers/RepoController.js');
-const { default: mockOpen } = await import('open');
 
 describe('RepoController', () => {
     let mockService;

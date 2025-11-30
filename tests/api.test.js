@@ -9,15 +9,29 @@ describe('GiteaService', () => {
         mockClient = {
             get: jest.fn(),
             post: jest.fn(),
-            delete: jest.fn()
+            delete: jest.fn(),
+            patch: jest.fn()
         };
         service = new GiteaService('http://test.com', 'token', mockClient);
     });
 
-    test('getRepos calls correct endpoint', async () => {
-        mockClient.get.mockResolvedValue({ data: [] });
-        await service.getRepos();
-        expect(mockClient.get).toHaveBeenCalledWith('/user/repos?limit=500');
+    test('getRepos handles pagination', async () => {
+        // Mock first page (100 items - triggers next page)
+        const page1 = Array(100).fill({ id: 1 });
+        // Mock second page (10 items - stops)
+        const page2 = Array(10).fill({ id: 2 });
+        
+        mockClient.get
+            .mockResolvedValueOnce({ data: page1 })
+            .mockResolvedValueOnce({ data: page2 });
+
+        const repos = await service.getRepos();
+        
+        expect(repos.length).toBe(110);
+        expect(mockClient.get).toHaveBeenCalledTimes(2);
+        // Verify params
+        expect(mockClient.get).toHaveBeenNthCalledWith(1, '/user/repos', expect.objectContaining({ params: { page: 1, limit: 100 } }));
+        expect(mockClient.get).toHaveBeenNthCalledWith(2, '/user/repos', expect.objectContaining({ params: { page: 2, limit: 100 } }));
     });
 
     test('createRepo sends correct data', async () => {
